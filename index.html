@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>光迹 Light Trace · 寄拍工作台</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #8a94a6;
+      --line: #e9edf4;
+      --blue: #4468ff;
+      --blue-soft: #edf1ff;
+      --green: #20b486;
+      --green-soft: #e7faf4;
+      --orange: #f39a4b;
+      --orange-soft: #fff3e8;
+      --red: #ec6a78;
+      --shadow: 0 12px 36px rgba(24, 38, 79, .06);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    .app { min-height: 100vh; display: flex; }
+    .sidebar { width: 264px; background: #fff; border-right: 1px solid var(--line); padding: 24px 16px; display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 9px; padding: 0 8px 30px; white-space: nowrap; }
+    .brand-mark { width: 42px; height: 42px; border-radius: 12px; background:#f5fbff; display:grid; place-items:center; overflow:hidden; box-shadow: 0 8px 16px rgba(68,104,255,.12); }
+    .brand-mark img { width: 100%; height: 100%; object-fit:cover; }
+    .brand strong { font-size: 14px; letter-spacing: .1px; white-space: nowrap; }
+    .brand small { display:block; color: var(--muted); font-size: 10px; margin-top: 2px; letter-spacing:.2px; }
+    .nav-title { color: #b0b7c4; font-size: 11px; margin: 4px 12px 8px; }
+    .nav { display: flex; flex-direction: column; gap: 5px; }
+    .nav-item { display: flex; align-items: center; gap: 11px; color: #677185; border-radius: 10px; padding: 12px 13px; font-size: 13px; background: transparent; transition: .2s; }
+    .nav-item:hover { background: #f7f8fc; color: var(--blue); }
+    .nav-item.active { background: var(--blue-soft); color: var(--blue); font-weight: 600; }
+    .nav-item .icon { width: 18px; text-align: center; font-size: 16px; }
+    .sidebar-bottom { margin-top: auto; background: #f7f8fc; border-radius: 14px; padding: 14px; }
+    .sidebar-bottom .label { color: var(--muted); font-size: 11px; }
+    .sidebar-bottom strong { display: block; font-size: 18px; margin: 6px 0 8px; }
+    .mini-progress { height: 6px; background: #e5e9f2; border-radius: 5px; overflow: hidden; }
+    .mini-progress i { display: block; width: 72%; height: 100%; background: var(--green); border-radius: inherit; }
+    .main { flex: 1; min-width: 0; padding: 26px 34px 36px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom: 28px; }
+    .eyebrow { color: var(--muted); font-size: 12px; margin-bottom: 7px; }
+    h1 { margin: 0; font-size: 26px; letter-spacing: -.6px; }
+    .top-actions { display:flex; align-items:center; gap: 14px; }
+    .month-select { border:1px solid var(--line); color:#4c5568; background:#fff; padding: 9px 13px; border-radius: 9px; outline:none; font-size: 12px; }
+    .sync-status { display:flex; align-items:center; gap:5px; color:#7b8799; font-size:10px; white-space:nowrap; }
+    .sync-status i { width:7px; height:7px; border-radius:50%; background:#a8b1c1; } .sync-status.online i { background:var(--green); } .sync-status.error i { background:var(--red); }
+    .avatar { width: 36px; height:36px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:12px; font-weight:600; background: linear-gradient(145deg,#282f42,#68738f); overflow:hidden; cursor:pointer; border:0; padding:0; }
+    .avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .summary-grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; margin-bottom: 18px; }
+    .card { background: var(--panel); border: 1px solid rgba(232,236,244,.8); border-radius: 15px; box-shadow: var(--shadow); }
+    .summary-card { padding: 18px 19px; position:relative; overflow:hidden; }
+    .summary-top { display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:12px; }
+    .summary-icon { width:31px; height:31px; border-radius:10px; display:grid; place-items:center; font-size:15px; }
+    .blue-icon { background:var(--blue-soft); color:var(--blue); } .green-icon { background:var(--green-soft); color:var(--green); } .orange-icon { background:var(--orange-soft); color:var(--orange); } .purple-icon { background:#f4edff; color:#9564d9; }
+    .summary-value { font-size: 25px; font-weight: 700; margin: 14px 0 7px; letter-spacing: -.6px; }
+    .summary-foot { font-size: 11px; color: var(--muted); }
+    .up { color: var(--green); font-weight: 600; } .down { color: var(--red); font-weight: 600; }
+    .grid-2 { display:grid; grid-template-columns: minmax(0,1.35fr) minmax(320px,.85fr); gap: 18px; margin-bottom: 18px; }
+    .panel { padding: 20px; }
+    .panel-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom: 18px; }
+    .panel-title { font-weight: 700; font-size: 15px; }
+    .panel-sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+    .link-btn { color: var(--blue); background:none; font-size: 11px; padding: 3px 0; }
+    .chart-wrap { height: 198px; position: relative; }
+    .chart-grid { position:absolute; inset: 0 0 25px 34px; display:flex; flex-direction:column; justify-content:space-between; }
+    .chart-grid span { border-top: 1px dashed #e9edf4; height: 0; position:relative; }
+    .chart-grid b { position:absolute; left:-31px; top:-7px; color:#b0b7c4; font-size:10px; font-weight:400; }
+    .chart-svg { position:absolute; left: 34px; right:0; top: 0; bottom:24px; width:calc(100% - 34px); height:calc(100% - 24px); overflow:visible; }
+    .x-labels { position:absolute; left:34px; right:0; bottom:0; display:flex; justify-content:space-between; color:#b0b7c4; font-size:10px; }
+    .legend { display:flex; align-items:center; gap: 14px; color:var(--muted); font-size:11px; margin-top: 10px; }
+    .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; }
+    .mix-content { display:flex; align-items:center; gap: 28px; padding: 10px 4px 16px; }
+    .donut { width: 154px; height:154px; border-radius:50%; background:conic-gradient(var(--blue) 0 62%, #8fd0c1 62% 100%); position:relative; flex:0 0 auto; }
+    .donut::after { content:""; position:absolute; inset:24px; background:#fff; border-radius:50%; }
+    .donut-center { position:absolute; inset:0; display:grid; place-items:center; z-index:1; text-align:center; line-height:1.25; }
+    .donut-center strong { font-size:23px; display:block; } .donut-center span { color:var(--muted); font-size:11px; }
+    .mix-list { flex:1; display:flex; flex-direction:column; gap:18px; }
+    .mix-item { display:flex; justify-content:space-between; align-items:center; color:#596276; font-size:12px; }
+    .mix-item b { color:var(--text); font-size:16px; }
+    .mix-name { display:flex; align-items:center; gap:7px; } .mix-dot { width:8px;height:8px;border-radius:50%; }
+    .task-panel { padding: 0; overflow:hidden; }
+    .task-head { padding:20px 20px 15px; display:flex; justify-content:space-between; align-items:center; }
+    .task-filters { display:flex; gap:7px; padding: 0 20px 14px; border-bottom:1px solid var(--line); }
+    .filter { background:#f6f7fa; color:#7c8698; border-radius:7px; padding:7px 11px; font-size:11px; }
+    .filter.active { background:var(--blue-soft); color:var(--blue); font-weight:600; }
+    .task-row { display:grid; grid-template-columns: minmax(200px,1.25fr) .72fr .78fr .72fr .72fr 92px; gap:15px; align-items:center; padding:16px 20px; border-bottom:1px solid #f0f2f6; font-size:12px; }
+    .task-row:last-child { border-bottom:0; }
+    .product { display:flex; align-items:center; gap:11px; min-width:0; }
+    .product-pic { width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex:0 0 auto; }
+    .pic-shoe { background:#eef1ff; } .pic-bag { background:#fff1e9; } .pic-watch { background:#e9faf5; } .pic-jacket { background:#f4edff; }
+    .product-name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .product-id { color:var(--muted); font-size:10px; margin-top:4px; }
+    .cell-label { display:none; color:var(--muted); }
+    .date { color:#465166; } .date small { display:block; color:var(--muted); font-size:10px; margin-top:3px; }
+    .status { display:inline-flex; align-items:center; width:max-content; gap:5px; border-radius:20px; padding:6px 9px; font-size:10px; font-weight:600; }
+    .status::before { content:""; width:5px;height:5px;border-radius:50%; background:currentColor; }
+    .s-todo { background:#fff3e8;color:#dd8b38; } .s-progress { background:#edf1ff;color:var(--blue); } .s-done { background:#e7faf4;color:#1da17a; }
+    .accept { background:var(--blue); color:#fff; border-radius:7px; padding:8px 10px; font-size:11px; transition:.2s; }
+    .accept:hover { filter:brightness(.93); transform:translateY(-1px); } .accept.accepted { background:var(--green); }
+    .bottom-grid { display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+    .budget-list { display:flex; flex-direction:column; gap:17px; }
+    .budget-line { display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px; } .budget-line span { color:#667085; } .budget-line b { font-size:12px; }
+    .bar { height:8px; border-radius:8px; background:#eff1f5; overflow:hidden; } .bar i { display:block; height:100%; border-radius:inherit; }
+    .green-bar { background:var(--green); } .blue-bar { background:var(--blue); } .orange-bar { background:var(--orange); }
+    .todo-list { display:flex; flex-direction:column; gap:10px; }
+    .todo { display:flex; align-items:center; gap:10px; background:#fafbfc; padding:10px 11px; border-radius:9px; font-size:12px; }
+    .todo input { accent-color:var(--blue); width:14px;height:14px; } .todo small { color:var(--muted); margin-left:auto; font-size:10px; }
+    .toast { position:fixed; right:28px; bottom:24px; color:#fff; background:#1e293b; padding:11px 15px; border-radius:9px; box-shadow:0 8px 24px rgba(0,0,0,.15); font-size:12px; opacity:0; transform:translateY(10px); pointer-events:none; transition:.25s; }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .modal-backdrop { position:fixed; inset:0; z-index:20; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(17,25,45,.42); backdrop-filter:blur(4px); }
+    .modal-backdrop.open { display:flex; }
+    .modal { width:min(560px, 100%); max-height:90vh; overflow:auto; background:#fff; border-radius:18px; box-shadow:0 24px 70px rgba(12,22,53,.22); padding:24px; }
+    .modal-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; }
+    .modal-title { font-size:18px; font-weight:700; } .modal-subtitle { color:var(--muted); font-size:11px; margin-top:5px; }
+    .modal-close { width:30px; height:30px; border-radius:9px; background:#f5f7fb; color:#738099; font-size:17px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .form-field { display:flex; flex-direction:column; gap:7px; } .form-field.full { grid-column:1/-1; }
+    .form-field label { color:#6f7a8f; font-size:11px; } .form-field input, .form-field select, .form-field textarea { width:100%; border:1px solid #e2e7f0; border-radius:9px; padding:10px 11px; color:var(--text); outline:none; background:#fff; font-size:12px; } .form-field textarea { resize:vertical; min-height:72px; }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft); }
+    .modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:20px; } .secondary-btn { background:#f1f3f7; color:#687388; border-radius:8px; padding:9px 14px; font-size:12px; } .danger-btn { background:#fff0f1; color:#d65967; border-radius:8px; padding:9px 14px; font-size:12px; margin-right:auto; }
+    .empty-state { padding:28px 20px; text-align:center; color:var(--muted); font-size:12px; }
+    .task-row .row-actions { display:flex; justify-content:flex-end; gap:6px; } .row-btn { border-radius:7px; padding:7px 9px; background:#f2f4f8; color:#647087; font-size:10px; } .row-btn.primary { background:var(--blue); color:#fff; } .row-btn.success { background:var(--green); color:#fff; }
+    .inline-note { color:var(--muted); font-size:10px; line-height:1.5; }
+    .member-field-label { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .remove-member { color:var(--red); background:#fff0f1; border-radius:5px; padding:3px 6px; font-size:10px; }
+    .promotion-panel { padding:0; overflow:hidden; margin-top:18px; }
+    .promotion-head { display:flex; justify-content:space-between; align-items:center; padding:20px 20px 14px; }
+    .promotion-toolbar { display:flex; gap:8px; align-items:center; padding:0 20px 14px; border-bottom:1px solid var(--line); }
+    .promotion-list-head, .promotion-row { display:grid; grid-template-columns:1.1fr 1.35fr .75fr .7fr 1fr 72px; gap:12px; align-items:center; padding:12px 20px; font-size:11px; }
+    .promotion-list-head { color:var(--muted); background:#fafbfc; font-size:10px; }
+    .promotion-row { border-bottom:1px solid #f0f2f6; color:#4c586c; }
+    .promotion-row:last-child { border-bottom:0; }
+    .promotion-amount { color:var(--orange); font-weight:700; }
+    .promotion-actions { display:flex; justify-content:flex-end; gap:5px; }
+    .promotion-actions button { background:#f2f4f8; color:#667287; border-radius:6px; padding:5px 7px; font-size:10px; }
+    .promotion-total { color:var(--orange); font-weight:700; margin-left:auto; font-size:13px; }
+    @media (max-width: 720px) { .promotion-list-head { display:none; } .promotion-row { grid-template-columns:1fr 1fr; gap:10px; } .promotion-row > :first-child { grid-column:1/-1; } .promotion-row > :last-child { justify-self:end; } }
+    .member-select { margin-left:auto; border:1px solid var(--line); color:#5e6a7e; background:#fff; border-radius:8px; padding:7px 10px; font-size:11px; outline:none; }
+    .assignee { display:flex; align-items:center; gap:7px; color:#556177; white-space:nowrap; }
+    .member-avatar { width:24px; height:24px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:10px; font-weight:700; background:var(--member-color, #738099); overflow:hidden; flex:0 0 auto; }
+    .member-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .member-chip { display:inline-flex; align-items:center; gap:5px; color:#687388; font-size:10px; margin-top:4px; }
+    .member-chip .member-avatar { width:17px; height:17px; font-size:8px; }
+    .member-summary { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .member-pill { display:flex; align-items:center; gap:6px; padding:6px 9px; background:#f7f8fb; border-radius:8px; font-size:10px; color:#647087; }
+    .member-pill b { color:var(--text); }
+    .account-overview { padding:16px 18px; margin-bottom:18px; }
+    .account-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; }
+    .account-card { background:#f8f9fc; border:1px solid transparent; border-radius:11px; padding:11px; text-align:left; color:#687388; transition:.2s; }
+    .account-card:hover, .account-card.active { border-color:#b9c5ff; background:var(--blue-soft); color:var(--blue); }
+    .account-card-top { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:600; }
+    .account-card-count { margin-top:8px; font-size:18px; color:var(--text); font-weight:700; }
+    .account-card small { color:var(--muted); font-size:10px; font-weight:400; }
+    .view-banner { display:none; margin-bottom:18px; padding:18px 20px; }
+    .view-banner.open { display:block; }
+    @media (max-width: 1050px) { .sidebar { width: 264px; } .main { padding:24px; } .summary-grid { grid-template-columns:repeat(2,1fr); } .grid-2 { grid-template-columns:1fr; } }
+    @media (max-width: 720px) { .app { display:block; } .sidebar { width:100%; height:auto; padding:14px; border-right:0; border-bottom:1px solid var(--line); } .brand { padding-bottom:12px; } .nav-title, .sidebar-bottom { display:none; } .nav { flex-direction:row; overflow-x:auto; } .nav-item { white-space:nowrap; } .main { padding:20px 14px; } .topbar { align-items:flex-start; gap:12px; } h1 { font-size:22px; } .top-actions { flex-wrap:wrap; justify-content:flex-end; } .summary-grid, .bottom-grid { grid-template-columns:1fr; } .task-filters { flex-wrap:wrap; } .member-select { margin-left:0; } .task-row { grid-template-columns:1fr 1fr; gap:12px; } .task-row > :first-child { grid-column:1/-1; } .task-row > :last-child { justify-self:end; } .cell-label { display:block; font-size:10px; margin-bottom:4px; } .mix-content { gap:16px; } .donut { width:125px;height:125px; } .donut::after { inset:20px; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark"><img src="light-trace-logo.png" alt="光迹 Light Trace Logo" /></div><div><strong>光迹 Light Trace</strong><small>DEWU STUDIO</small></div></div>
+      <div class="nav-title">工作空间</div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard"><span class="icon">▦</span>工作概览</button>
+        <button class="nav-item" data-view="tasks"><span class="icon">✓</span>任务管理</button>
+        <button class="nav-item" data-view="orders"><span class="icon">⌁</span>商单记录</button>
+        <button class="nav-item" data-view="finance"><span class="icon">¥</span>财务看板</button>
+      </nav>
+      <div class="nav-title" style="margin-top:24px">快捷工具</div>
+      <nav class="nav">
+        <button class="nav-item" data-view="reminders"><span class="icon">◷</span>寄回提醒</button>
+        <button class="nav-item" data-view="settings"><span class="icon">⚙</span>工作室设置</button>
+      </nav>
+      <div class="sidebar-bottom"><div class="label">本月任务完成率</div><strong>72%</strong><div class="mini-progress"><i></i></div></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">星期一，2026 年 9 月 28 日</div><h1>欢迎回到工作台 <span style="font-size:21px">👋</span></h1></div>
+        <div class="top-actions"><span class="sync-status" id="syncStatus"><i></i>正在连接云端</span><button class="link-btn" id="exportBackupBtn">备份</button><button class="link-btn" id="importBackupBtn">恢复</button><input type="file" id="backupInput" accept="application/json" hidden /><select class="month-select" id="monthSelect"><option value="2026-09">2026 年 9 月</option><option value="2026-08">2026 年 8 月</option><option value="2026-07">2026 年 7 月</option><option value="2026-06">2026 年 6 月</option><option value="2026-05">2026 年 5 月</option><option value="2026-04">2026 年 4 月</option><option value="2026-03">2026 年 3 月</option><option value="2026-02">2026 年 2 月</option><option value="2026-01">2026 年 1 月</option><option value="2025-12">2025 年 12 月</option><option value="2025-11">2025 年 11 月</option><option value="2025-10">2025 年 10 月</option></select><button class="avatar" id="profileAvatar" title="点击更换账号头像" aria-label="点击更换账号头像">林</button><input type="file" id="avatarInput" accept="image/png,image/jpeg,image/webp" hidden /></div>
+      </header>
+
+      <section class="summary-grid">
+        <div class="card summary-card"><div class="summary-top"><span>进行中任务</span><span class="summary-icon blue-icon">◒</span></div><div class="summary-value" id="taskCount">18 <small style="font-size:13px;color:#8791a4;font-weight:500">/ 24</small></div><div class="summary-foot"><span class="up">↑ 12%</span> 较上月同期</div></div>
+        <div class="card summary-card"><div class="summary-top"><span>任务收入合计</span><span class="summary-icon green-icon">¥</span></div><div class="summary-value" id="taskIncomeTotal">¥ 0</div><div class="summary-foot">所有任务报价自动汇总</div></div>
+        <div class="card summary-card"><div class="summary-top"><span>任务支出合计</span><span class="summary-icon orange-icon">↗</span></div><div class="summary-value" id="taskExpenseTotal">¥ 0</div><div class="summary-foot">运费 + 任务投流支出</div></div>
+        <div class="card summary-card"><div class="summary-top"><span>待寄回产品</span><span class="summary-icon purple-icon">▣</span></div><div class="summary-value">7 <small style="font-size:13px;color:#8791a4;font-weight:500">件</small></div><div class="summary-foot"><span class="down">2 件</span> 需在 3 天内寄回</div></div>
+      </section>
+
+      <section class="card account-overview"><div class="panel-head" style="margin-bottom:12px"><div><div class="panel-title">团队账号分工</div><div class="panel-sub">点击成员卡片即可筛选该账号负责的寄拍任务</div></div><button class="link-btn" data-team-open>管理成员</button></div><div class="account-cards" id="accountCards"></div></section>
+      <section class="card view-banner" id="viewBanner"><div class="panel-title" id="viewBannerTitle"></div><div class="panel-sub" id="viewBannerText"></div></section>
+
+      <section class="grid-2">
+        <div class="card panel">
+          <div class="panel-head"><div><div class="panel-title">收入趋势</div><div class="panel-sub" id="chartSubtitle">近 6 个月收入与推广支出变化</div></div><div style="display:flex;gap:12px;align-items:center"><select class="month-select" id="rangeSelect"><option value="3">近 3 个月</option><option value="6" selected>近 6 个月</option><option value="12">近 12 个月</option></select><button class="link-btn" id="exportBtn">导出报表 ↗</button></div></div>
+          <div class="chart-wrap"><div class="chart-grid"><span><b>30k</b></span><span><b>20k</b></span><span><b>10k</b></span><span><b>0</b></span></div><svg class="chart-svg" viewBox="0 0 600 170" preserveAspectRatio="none"><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4468ff" stop-opacity=".2"/><stop offset="100%" stop-color="#4468ff" stop-opacity="0"/></linearGradient></defs><path d="M0,130 C48,122 65,111 113,119 S174,86 226,95 S286,64 336,78 S400,36 448,51 S512,18 600,31 L600,170 L0,170 Z" fill="url(#fill)"/><path d="M0,130 C48,122 65,111 113,119 S174,86 226,95 S286,64 336,78 S400,36 448,51 S512,18 600,31" fill="none" stroke="#4468ff" stroke-width="3" stroke-linecap="round"/><path d="M0,151 C50,146 72,145 113,149 S174,129 226,140 S286,122 336,130 S400,105 448,121 S512,95 600,109" fill="none" stroke="#8fd0c1" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="5 5"/><g fill="#4468ff"><circle cx="113" cy="119" r="4"/><circle cx="226" cy="95" r="4"/><circle cx="336" cy="78" r="4"/><circle cx="448" cy="51" r="4"/><circle cx="600" cy="31" r="4"/></g></svg><div class="x-labels" id="chartLabels"><span>4 月</span><span>5 月</span><span>6 月</span><span>7 月</span><span>8 月</span><span>9 月</span></div></div>
+          <div class="legend"><span><i style="background:#4468ff"></i>账号收入</span><span><i style="background:#8fd0c1"></i>推广支出</span></div>
+        </div>
+        <div class="card panel"><div class="panel-head"><div><div class="panel-title">内容结构</div><div class="panel-sub">本月发布内容占比</div></div><button class="link-btn">查看详情</button></div><div class="mix-content"><div class="donut"><div class="donut-center"><div><strong>62%</strong><span>商单内容</span></div></div></div><div class="mix-list"><div class="mix-item"><span class="mix-name"><i class="mix-dot" style="background:#4468ff"></i>商单内容</span><b>62%</b></div><div class="mix-item"><span class="mix-name"><i class="mix-dot" style="background:#8fd0c1"></i>非商单内容</span><b>38%</b></div><div style="height:1px;background:var(--line)"></div><div class="mix-item"><span style="color:var(--muted)">总发布数量</span><b>42 条</b></div></div></div></div>
+      </section>
+
+      <section class="card task-panel">
+        <div class="task-head"><div><div class="panel-title">寄拍任务</div><div class="panel-sub">跟踪产品从接收、拍摄到寄回的完整周期</div></div><div style="display:flex;gap:8px"><button class="link-btn" data-team-open>团队设置</button><button class="accept" id="newTaskBtn">＋ 新建任务</button></div></div>
+        <div class="task-filters"><button class="filter active" data-filter="all">全部 <span>24</span></button><button class="filter" data-filter="todo">待接收 <span>6</span></button><button class="filter" data-filter="progress">拍摄中 <span>11</span></button><button class="filter" data-filter="done">已完成 <span>7</span></button><select id="memberFilter" class="member-select"><option value="all">全部负责人</option></select></div>
+        <div id="memberSummary" class="member-summary" style="padding:0 20px 14px"></div>
+        <div id="taskList">
+        <div class="task-row" style="background:#fafbfc;color:var(--muted);font-size:10px;padding-top:11px;padding-bottom:11px"><span>产品信息</span><span>任务发布时间</span><span>产品寄回时间</span><span>负责人</span><span>任务状态</span><span></span></div>
+        <div class="task-row" data-status="progress"><div class="product"><div class="product-pic pic-shoe">👟</div><div><div class="product-name">Nike Dunk Low Retro</div><div class="product-id">任务号 DW-0928-018</div></div></div><div class="date"><span class="cell-label">发布时间</span>09 月 26 日<small>2 天前</small></div><div class="date"><span class="cell-label">寄回时间</span>10 月 03 日<small>剩余 5 天</small></div><span class="status s-progress">拍摄中</span><button class="accept" data-accept>查看详情</button></div>
+        <div class="task-row" data-status="todo"><div class="product"><div class="product-pic pic-bag">👜</div><div><div class="product-name">CELINE Triomphe 腋下包</div><div class="product-id">任务号 DW-0928-017</div></div></div><div class="date"><span class="cell-label">发布时间</span>09 月 28 日<small>今天</small></div><div class="date"><span class="cell-label">寄回时间</span>10 月 05 日<small>剩余 7 天</small></div><span class="status s-todo">待接收</span><button class="accept" data-accept>接受任务</button></div>
+        <div class="task-row" data-status="progress"><div class="product"><div class="product-pic pic-watch">⌚</div><div><div class="product-name">CASIO G-SHOCK 经典款</div><div class="product-id">任务号 DW-0927-016</div></div></div><div class="date"><span class="cell-label">发布时间</span>09 月 25 日<small>3 天前</small></div><div class="date"><span class="cell-label">寄回时间</span>10 月 01 日<small>剩余 3 天</small></div><span class="status s-progress">待审核</span><button class="accept" data-accept>查看详情</button></div>
+        <div class="task-row" data-status="done"><div class="product"><div class="product-pic pic-jacket">🧥</div><div><div class="product-name">Miu Miu 2026 秋冬外套</div><div class="product-id">任务号 DW-0926-014</div></div></div><div class="date"><span class="cell-label">发布时间</span>09 月 21 日<small>7 天前</small></div><div class="date"><span class="cell-label">寄回时间</span>09 月 28 日<small>已按时寄回</small></div><span class="status s-done">已完成</span><button class="accept" data-accept>查看详情</button></div>
+        </div>
+      </section>
+
+      <section class="card promotion-panel"><div class="promotion-head"><div><div class="panel-title">推广明细</div><div class="panel-sub">按账号记录每次推广做了什么、花了多少</div></div><div style="display:flex;align-items:center;gap:12px"><span class="promotion-total" id="promotionTotal">¥ 0</span><button class="accept" id="newPromotionBtn">＋ 添加推广记录</button></div></div><div class="promotion-toolbar"><select class="member-select" id="promotionMemberFilter" style="margin-left:0"><option value="all">全部账号</option></select><select class="member-select" id="promotionChannelFilter" style="margin-left:0"><option value="all">全部渠道</option></select></div><div class="promotion-list-head"><span>负责人 / 账号</span><span>推广内容与渠道</span><span>日期</span><span>消耗金额</span><span>备注</span><span></span></div><div id="promotionList"></div></section>
+
+      <section class="bottom-grid" style="margin-top:18px"><div class="card panel"><div class="panel-head"><div><div class="panel-title">本月预算执行</div><div class="panel-sub">所有金额由任务和推广记录实时汇总</div></div><button class="link-btn" data-budget-open>管理预算</button></div><div class="budget-list"><div><div class="budget-line" id="incomeBudgetLine"><span>任务收入</span><b>¥ 0 / ¥ 35,000</b></div><div class="bar"><i class="green-bar" id="incomeBudgetBar" style="width:0%"></i></div></div><div><div class="budget-line" id="promotionBudgetLine"><span>推广支出</span><b>¥ 0 / ¥ 6,000</b></div><div class="bar"><i class="orange-bar" id="promotionBudgetBar" style="width:0%"></i></div></div><div><div class="budget-line" id="shippingBudgetLine"><span>寄回运费</span><b>¥ 0 / ¥ 3,500</b></div><div class="bar"><i class="blue-bar" id="shippingBudgetBar" style="width:0%"></i></div></div></div></div><div class="card panel"><div class="panel-head"><div><div class="panel-title">今日待办</div><div class="panel-sub">把重要的事按时完成</div></div><button class="link-btn" data-todo-add>＋ 添加待办</button></div><div class="todo-list" id="todoList"><label class="todo"><input type="checkbox" />确认 CELINE 腋下包收货信息 <small>今天 14:00</small></label><label class="todo"><input type="checkbox" />提交 G-SHOCK 初版照片 <small>今天 18:00</small></label><label class="todo"><input type="checkbox" />寄回 2 件已完成产品 <small>明天</small></label></div></div></section>
+    </main>
+  </div>
+  <div class="modal-backdrop" id="taskModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><div class="modal-title" id="taskModalTitle">新建寄拍任务</div><div class="modal-subtitle">信息会保存在当前浏览器，下次打开仍可继续使用</div></div><button class="modal-close" data-close="taskModal">×</button></div><form id="taskForm"><input type="hidden" id="taskId"/><div class="form-grid"><div class="form-field full"><label>产品名称</label><input id="taskProduct" required placeholder="例如：New Balance 530 米白色"/></div><div class="form-field"><label>任务发布时间</label><input id="taskPublish" type="date" required/></div><div class="form-field"><label>产品寄回时间</label><input id="taskReturn" type="date" required/></div><div class="form-field"><label>任务负责人 / 账号</label><select id="taskMember" required></select></div><div class="form-field"><label>任务状态</label><select id="taskStatus"><option value="todo">待接收</option><option value="progress">拍摄中</option><option value="done">已完成</option></select></div><div class="form-field"><label>任务类型</label><select id="taskType"><option>商单</option><option>非商单</option></select></div><div class="form-field"><label>任务收入 / 报价</label><input id="taskIncome" type="number" min="0" step="0.01" placeholder="例如 800"/></div><div class="form-field"><label>寄回运费</label><input id="taskShipping" type="number" min="0" step="0.01" placeholder="例如 12"/></div><div class="form-field"><label>任务投流支出</label><input id="taskPromotion" type="number" min="0" step="0.01" placeholder="例如 80"/></div><div class="form-field full"><label>备注</label><textarea id="taskNote" placeholder="记录尺码、拍摄要求、寄回方式等"></textarea></div></div><p class="inline-note">任务净收益 = 任务收入 − 寄回运费 − 任务投流支出。未发生的费用可以先填 0，之后编辑任务补录。</p><div class="modal-actions"><button type="button" class="danger-btn" id="deleteTaskBtn" style="display:none">删除任务</button><button type="button" class="secondary-btn" data-close="taskModal">取消</button><button type="submit" class="accept">保存任务</button></div></form></div></div>
+  <div class="modal-backdrop" id="budgetModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><div class="modal-title">编辑本月预算目标</div><div class="modal-subtitle">实际收入和支出由每条任务、推广记录自动计算</div></div><button class="modal-close" data-close="budgetModal">×</button></div><form id="budgetForm"><div class="form-grid"><div class="form-field"><label>任务收入目标</label><input id="budgetIncome" type="number" min="0" required/></div><div class="form-field"><label>推广支出预算</label><input id="budgetPromotion" type="number" min="0" required/></div><div class="form-field"><label>寄回运费预算</label><input id="budgetProps" type="number" min="0" required/></div></div><p class="inline-note">请在任务中录入报价、寄回运费、任务投流支出；推广明细中录入具体投放。系统会实时汇总，无需手工填写“已用金额”。</p><div class="modal-actions"><button type="button" class="secondary-btn" data-close="budgetModal">取消</button><button type="submit" class="accept">保存预算</button></div></form></div></div>
+  <div class="modal-backdrop" id="todoModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><div class="modal-title">添加待办</div><div class="modal-subtitle">把临时事项也放进今天的工作清单</div></div><button class="modal-close" data-close="todoModal">×</button></div><form id="todoForm"><div class="form-field"><label>待办内容</label><input id="todoText" required placeholder="例如：确认快递单号"/></div><div class="modal-actions"><button type="button" class="secondary-btn" data-close="todoModal">取消</button><button type="submit" class="accept">添加待办</button></div></form></div></div>
+  <div class="modal-backdrop" id="promotionModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><div class="modal-title" id="promotionModalTitle">添加推广记录</div><div class="modal-subtitle">记录具体账号做了什么推广，以及实际消耗</div></div><button class="modal-close" data-close="promotionModal">×</button></div><form id="promotionForm"><input type="hidden" id="promotionId"/><div class="form-grid"><div class="form-field"><label>负责人 / 账号</label><select id="promotionMember" required></select></div><div class="form-field"><label>推广渠道</label><select id="promotionChannel" required><option>小红书</option><option>抖音</option><option>得物站内</option><option>微信社群</option><option>其他</option></select></div><div class="form-field full"><label>推广内容 / 做了什么</label><input id="promotionContent" required placeholder="例如：Nike Dunk 秋季穿搭笔记投流"/></div><div class="form-field"><label>推广日期</label><input id="promotionDate" type="date" required/></div><div class="form-field"><label>消耗金额</label><input id="promotionAmount" type="number" min="0" step="0.01" required placeholder="0.00"/></div><div class="form-field full"><label>备注</label><textarea id="promotionNote" placeholder="记录投放目标、订单数、素材链接等"></textarea></div></div><div class="modal-actions"><button type="button" class="danger-btn" id="deletePromotionBtn" style="display:none">删除记录</button><button type="button" class="secondary-btn" data-close="promotionModal">取消</button><button type="submit" class="accept">保存记录</button></div></form></div></div>
+  <div class="modal-backdrop" id="teamModal" aria-hidden="true"><div class="modal"><div class="modal-head"><div><div class="modal-title">团队成员设置</div><div class="modal-subtitle">成员数量不设上限，新增后即可分配到任务</div></div><button class="modal-close" data-close="teamModal">×</button></div><form id="teamForm"><div id="teamFields" class="form-grid"></div><button type="button" class="secondary-btn" id="addMemberBtn" style="margin-top:14px">＋ 添加成员</button><div class="modal-actions"><button type="button" class="secondary-btn" data-close="teamModal">取消</button><button type="submit" class="accept">保存成员</button></div></form></div></div>
+  <div class="toast" id="toast">已更新</div>
+  <script>
+    const $ = (s, root=document) => root.querySelector(s), $$ = (s, root=document) => [...root.querySelectorAll(s)];
+    const toast = $('#toast'); let toastTimer;
+    const showToast = message => { toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 2200); };
+    const CLOUD_API = 'https://kivyfnrfzqbmfjrcagyh.supabase.co/rest/v1';
+    const CLOUD_KEY = 'sb_publishable_Rtwm2YHtMJcRCNUYBRlNxw_MX-SvMjD';
+    const CLOUD_ROW_ID = 'light-trace-shared-workspace';
+    const USE_LAN_SERVER = location.protocol === 'http:' && !location.hostname.endsWith('vercel.app');
+    let cloudReady = false, cloudApplying = false, cloudUpdatedAt = '', cloudSyncTimer = null;
+    const setSyncStatus = (text, state='') => { const el=$('#syncStatus'); if(!el)return; el.className='sync-status '+state; el.innerHTML=`<i></i>${text}`; };
+    const storage = { get(k, fallback) { try { const v=localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; } }, set(k,v) { localStorage.setItem(k, JSON.stringify(v)); if(k.startsWith('dewu')) queueCloudSave(); } };
+    const savedAvatar = storage.get('dewuAvatar',''); const renderAvatar = src => { const el=$('#profileAvatar'); el.innerHTML=src?`<img src="${src}" alt="账号头像"/>`:'林'; }; renderAvatar(savedAvatar);
+    const today = new Date(); const iso = d => new Date(d).toISOString().slice(0,10); const fmt = d => { const x=new Date(d+'T00:00:00'); return String(x.getMonth()+1).padStart(2,'0')+' 月 '+String(x.getDate()).padStart(2,'0')+' 日'; };
+    const ago = d => { const diff=Math.round((new Date()-new Date(d+'T00:00:00'))/86400000); return diff<=0?'今天':diff+' 天前'; };
+    const members = [
+      {id:'lin',name:'林老板',short:'林',color:'#4468ff'},
+      {id:'chen',name:'陈可',short:'陈',color:'#20b486'},
+      {id:'wang',name:'王宁',short:'王',color:'#f39a4b'},
+      {id:'zhao',name:'赵一',short:'赵',color:'#9564d9'},
+      {id:'sun',name:'孙悦',short:'孙',color:'#ec6a78'}
+    ];
+    const memberById = id => members.find(m=>m.id===id) || members[0];
+    const memberAvatar = m => m.avatar ? `<img src="${m.avatar}" alt="${escapeHtml(m.name)}"/>` : m.short;
+    const seedTasks = [
+      {id:'DW-0928-018',product:'Nike Dunk Low Retro',publish:'2026-09-26',returnDate:'2026-10-03',status:'progress',type:'商单',member:'lin',income:980,shipping:12,promotion:80,icon:'👟',pic:'pic-shoe',note:''},
+      {id:'DW-0928-017',product:'CELINE Triomphe 腋下包',publish:'2026-09-28',returnDate:'2026-10-05',status:'todo',type:'商单',member:'chen',income:1260,shipping:0,promotion:0,icon:'👜',pic:'pic-bag',note:''},
+      {id:'DW-0927-016',product:'CASIO G-SHOCK 经典款',publish:'2026-09-25',returnDate:'2026-10-01',status:'progress',type:'非商单',member:'wang',income:520,shipping:18,promotion:60,icon:'⌚',pic:'pic-watch',note:''},
+      {id:'DW-0926-014',product:'Miu Miu 2026 秋冬外套',publish:'2026-09-21',returnDate:'2026-09-28',status:'done',type:'商单',member:'zhao',income:1680,shipping:15,promotion:120,icon:'🧥',pic:'pic-jacket',note:''}
+    ];
+    let tasks = storage.get('dewuTasks', seedTasks); let budgets = storage.get('dewuBudgets', {income:35000,promotion:6000,props:3500,spentPromotion:4280});
+    const savedMembers = storage.get('dewuMembers', null); if(savedMembers && savedMembers.length) members.splice(0,members.length,...savedMembers);
+    const seedPromotions = [{id:'PR-001',member:'lin',channel:'小红书',content:'Nike Dunk 秋季穿搭笔记投流',date:'2026-09-26',amount:1280,note:'带货链接点击 486'},{id:'PR-002',member:'chen',channel:'抖音',content:'CELINE 腋下包短视频加热',date:'2026-09-24',amount:860,note:'测试 2 组素材'},{id:'PR-003',member:'wang',channel:'得物站内',content:'G-SHOCK 商品橱窗推广',date:'2026-09-21',amount:760,note:'站内关键词'},{id:'PR-004',member:'zhao',channel:'小红书',content:'秋冬外套合集笔记投流',date:'2026-09-18',amount:680,note:'自然流量补量'},{id:'PR-005',member:'sun',channel:'微信社群',content:'老客上新通知与优惠',date:'2026-09-16',amount:700,note:'3 个社群'}];
+    let promotions = storage.get('dewuPromotions', seedPromotions); let activeFilter = 'all'; let memberFilter = 'all'; let editingId = null; let promotionMemberFilter = 'all'; let promotionChannelFilter = 'all'; let editingPromotionId = null;
+    const cloudHeaders = () => ({'apikey':CLOUD_KEY,'Authorization':`Bearer ${CLOUD_KEY}`,'Content-Type':'application/json'});
+    const cloudPayload = () => ({tasks, members:members.map(m=>({id:m.id,name:m.name,short:m.short,color:m.color,avatar:m.avatar||''})), promotions, budgets, todos});
+    const applyCloudPayload = payload => { if(!payload || typeof payload!=='object') return; cloudApplying=true; try { if(Array.isArray(payload.tasks)) tasks=payload.tasks; if(Array.isArray(payload.members)&&payload.members.length) members.splice(0,members.length,...payload.members); if(Array.isArray(payload.promotions)) promotions=payload.promotions; if(payload.budgets) budgets=payload.budgets; if(Array.isArray(payload.todos)) todos.splice(0,todos.length,...payload.todos); localStorage.setItem('dewuTasks',JSON.stringify(tasks)); localStorage.setItem('dewuMembers',JSON.stringify(members)); localStorage.setItem('dewuPromotions',JSON.stringify(promotions)); localStorage.setItem('dewuBudgets',JSON.stringify(budgets)); localStorage.setItem('dewuTodos',JSON.stringify(todos)); fillMemberOptions(); renderTasks(); renderPromotions(); renderTodos(); } finally { cloudApplying=false; } };
+    async function saveCloudState(){ if(!cloudReady||cloudApplying)return; setSyncStatus('正在同步'); try { if(USE_LAN_SERVER){ const response=await fetch('/api/state',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({payload:cloudPayload(),updated_at:new Date().toISOString()})}); if(!response.ok)throw new Error(await response.text()); const row=await response.json(); cloudUpdatedAt=row.updated_at||new Date().toISOString(); setSyncStatus('局域网已同步','online'); return; } const response=await fetch(`${CLOUD_API}/studio_state?on_conflict=id`,{method:'POST',headers:{...cloudHeaders(),Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:CLOUD_ROW_ID,payload:cloudPayload(),updated_at:new Date().toISOString()})}); if(!response.ok)throw new Error(await response.text()); const rows=await response.json(); cloudUpdatedAt=rows[0]?.updated_at||new Date().toISOString(); setSyncStatus('已同步','online'); } catch(error) { console.warn('Sync failed',error); setSyncStatus(USE_LAN_SERVER?'局域网连接失败':'等待数据库初始化','error'); } }
+    function queueCloudSave(){ if(!cloudReady||cloudApplying)return; clearTimeout(cloudSyncTimer); cloudSyncTimer=setTimeout(saveCloudState,500); }
+    async function loadCloudState(){ setSyncStatus(USE_LAN_SERVER?'正在连接主机':'正在连接云端'); try { if(USE_LAN_SERVER){ const response=await fetch('/api/state'); if(!response.ok)throw new Error(await response.text()); const row=await response.json(); cloudReady=true; if(row.payload){ cloudUpdatedAt=row.updated_at||''; applyCloudPayload(row.payload); setSyncStatus('局域网已同步','online'); } else { await saveCloudState(); } return; } const response=await fetch(`${CLOUD_API}/studio_state?id=eq.${CLOUD_ROW_ID}&select=payload,updated_at`,{headers:cloudHeaders()}); if(!response.ok)throw new Error(await response.text()); const rows=await response.json(); cloudReady=true; if(rows[0]){ cloudUpdatedAt=rows[0].updated_at||''; applyCloudPayload(rows[0].payload); setSyncStatus('已同步','online'); } else { await saveCloudState(); } } catch(error) { console.warn('Cloud load failed',error); setSyncStatus(USE_LAN_SERVER?'局域网连接失败':'等待数据库初始化','error'); } }
+    const statusMap = {todo:['待接收','s-todo'], progress:['拍摄中','s-progress'], done:['已完成','s-done']};
+    const renderTasks = () => {
+      const list = $('#taskList'); const visible=tasks.filter(t=>(activeFilter==='all'||t.status===activeFilter)&&(memberFilter==='all'||(t.member||'lin')===memberFilter));
+      list.innerHTML = '<div class="task-row" style="background:#fafbfc;color:var(--muted);font-size:10px;padding-top:11px;padding-bottom:11px"><span>产品信息</span><span>任务发布时间</span><span>产品寄回时间</span><span>负责人</span><span>任务状态</span><span></span></div>' + (visible.length ? visible.map(t=>{ const [st,cls]=statusMap[t.status]; const accepted=t.status!=='todo'; const m=memberById(t.member); const net=Number(t.income||0)-Number(t.shipping||0)-Number(t.promotion||0); return `<div class="task-row" data-status="${t.status}" data-id="${t.id}"><div class="product"><div class="product-pic ${t.pic||'pic-shoe'}">${t.icon||'📦'}</div><div><div class="product-name">${escapeHtml(t.product)}</div><div class="product-id">任务号 ${t.id} · ${t.type||'商单'}</div><div class="member-chip">收入 ¥${Number(t.income||0).toLocaleString()} · 净收益 ¥${net.toLocaleString()}</div></div></div><div class="date"><span class="cell-label">发布时间</span>${fmt(t.publish)}<small>${ago(t.publish)}</small></div><div class="date"><span class="cell-label">寄回时间</span>${fmt(t.returnDate)}<small>${returnHint(t.returnDate)}</small></div><div class="assignee"><span class="member-avatar" style="--member-color:${m.color}">${memberAvatar(m)}</span>${m.name}</div><span class="status ${cls}">${st}</span><div class="row-actions"><button class="row-btn ${accepted?'':'primary'}" data-action="${accepted?'edit':'accept'}" data-id="${t.id}">${accepted?'编辑':'接受任务'}</button></div></div>`; }).join('') : '<div class="empty-state">当前筛选下没有任务，点击“新建任务”添加一条吧</div>');
+      updateCounts();
+      renderFinancialDashboard();
+      $('#memberSummary').innerHTML=members.map(m=>{const n=tasks.filter(t=>(t.member||'lin')===m.id).length; return `<span class="member-pill"><i class="member-avatar" style="--member-color:${m.color}">${memberAvatar(m)}</i>${m.name}<b>${n} 单</b></span>`;}).join('');
+      $('#accountCards').innerHTML=`<button class="account-card ${memberFilter==='all'?'active':''}" data-account="all"><div class="account-card-top"><span class="member-avatar" style="--member-color:#738099">全</span>全部账号</div><div class="account-card-count">${tasks.length} <small>单</small></div></button>`+members.map(m=>{const n=tasks.filter(t=>(t.member||'lin')===m.id).length; return `<button class="account-card ${memberFilter===m.id?'active':''}" data-account="${m.id}"><div class="account-card-top"><span class="member-avatar" style="--member-color:${m.color}">${memberAvatar(m)}</span>${escapeHtml(m.name)}</div><div class="account-card-count">${n} <small>单</small></div></button>`;}).join('');
+    };
+    const escapeHtml = s => String(s||'').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const returnHint = d => { const diff=Math.ceil((new Date(d+'T23:59:59')-new Date())/86400000); return diff<0?'已超期':diff===0?'今天寄回':`剩余 ${diff} 天`; };
+    const renderChartRange = () => { const [year,month]=($('#monthSelect').value||'2026-09').split('-').map(Number); const count=Number($('#rangeSelect').value||6); const labels=[]; for(let i=count-1;i>=0;i--){ const d=new Date(year,month-1-i,1); labels.push(`<span>${d.getMonth()+1} 月</span>`); } $('#chartLabels').innerHTML=labels.join(''); $('#chartSubtitle').textContent=`近 ${count} 个月收入与推广支出变化`; };
+    const setBudget = (line,bar,label,actual,target) => { $(line).innerHTML=`<span>${label}</span><b>¥ ${actual.toLocaleString()} / ¥ ${target.toLocaleString()}</b>`; $(bar).style.width=Math.min(100,actual/(target||1)*100)+'%'; };
+    const renderFinancialDashboard = () => { const income=tasks.reduce((s,t)=>s+Number(t.income||0),0); const shipping=tasks.reduce((s,t)=>s+Number(t.shipping||0),0); const taskPromotion=tasks.reduce((s,t)=>s+Number(t.promotion||0),0); const recordPromotion=promotions.reduce((s,p)=>s+Number(p.amount||0),0); const promotion=taskPromotion+recordPromotion; const expense=shipping+promotion; $('#taskIncomeTotal').textContent='¥ '+income.toLocaleString(); $('#taskExpenseTotal').textContent='¥ '+expense.toLocaleString(); $('#promotionTotal').textContent='¥ '+promotion.toLocaleString(); budgets.spentPromotion=promotion; storage.set('dewuBudgets',budgets); setBudget('#incomeBudgetLine','#incomeBudgetBar','任务收入',income,budgets.income); setBudget('#promotionBudgetLine','#promotionBudgetBar','推广支出',promotion,budgets.promotion); setBudget('#shippingBudgetLine','#shippingBudgetBar','寄回运费',shipping,budgets.props); };
+    const savePromotions=()=>storage.set('dewuPromotions',promotions);
+    const renderPromotionFilters=()=>{ $('#promotionMemberFilter').innerHTML='<option value="all">全部账号</option>'+members.map(m=>`<option value="${m.id}">${escapeHtml(m.name)}</option>`).join(''); const channels=[...new Set(promotions.map(p=>p.channel))]; $('#promotionChannelFilter').innerHTML='<option value="all">全部渠道</option>'+channels.map(c=>`<option>${escapeHtml(c)}</option>`).join(''); $('#promotionMemberFilter').value=promotionMemberFilter; $('#promotionChannelFilter').value=promotionChannelFilter; $('#promotionMember').innerHTML=members.map(m=>`<option value="${m.id}">${escapeHtml(m.name)}</option>`).join(''); };
+    const renderPromotions=()=>{ const list=$('#promotionList'); const visible=promotions.filter(p=>(promotionMemberFilter==='all'||p.member===promotionMemberFilter)&&(promotionChannelFilter==='all'||p.channel===promotionChannelFilter)); list.innerHTML=visible.length?visible.map(p=>{const m=memberById(p.member); return `<div class="promotion-row" data-promotion-id="${p.id}"><div class="assignee"><span class="member-avatar" style="--member-color:${m.color}">${memberAvatar(m)}</span>${escapeHtml(m.name)}</div><div><b>${escapeHtml(p.content)}</b><small style="display:block;color:var(--muted);margin-top:4px">${escapeHtml(p.channel)}</small></div><div>${p.date}</div><div class="promotion-amount">¥ ${Number(p.amount||0).toLocaleString()}</div><div style="color:var(--muted)">${escapeHtml(p.note||'—')}</div><div class="promotion-actions"><button data-promotion-action="edit" data-id="${p.id}">编辑</button><button data-promotion-action="delete" data-id="${p.id}">删</button></div></div>`;}).join(''):'<div class="empty-state">还没有符合条件的推广记录，点击“添加推广记录”开始记录。</div>'; renderFinancialDashboard(); };
+    const updateCounts = () => { const count=tasks.filter(t=>t.status!=='done').length; $('#taskCount').innerHTML=`${count} <small style="font-size:13px;color:#8791a4;font-weight:500">/ ${tasks.length}</small>`; $$('.filter').forEach(f=>{ const type=f.dataset.filter; const n=type==='all'?tasks.length:tasks.filter(t=>t.status===type).length; f.innerHTML=f.textContent.replace(/\d+$/, '').trim()+' <span>'+n+'</span>'; }); };
+    const openModal = id => { const el=$('#'+id); el.classList.add('open'); el.setAttribute('aria-hidden','false'); }; const closeModal=id=>{ const el=$('#'+id); el.classList.remove('open'); el.setAttribute('aria-hidden','true'); };
+    const saveTasks = () => storage.set('dewuTasks', tasks);
+    const fillMemberOptions = () => { $('#taskMember').innerHTML=members.map(m=>`<option value="${m.id}">${m.name}（${m.id==='lin'?'主账号':'账号 '+m.short}）</option>`).join(''); $('#memberFilter').innerHTML='<option value="all">全部负责人</option>'+members.map(m=>`<option value="${m.id}">${m.name}</option>`).join(''); renderPromotionFilters(); };
+    const openTask = task => { editingId=task?.id||null; $('#taskModalTitle').textContent=task?'编辑寄拍任务':'新建寄拍任务'; $('#taskId').value=task?.id||''; $('#taskProduct').value=task?.product||''; $('#taskPublish').value=task?.publish||iso(today); $('#taskReturn').value=task?.returnDate||iso(new Date(today.getTime()+7*86400000)); $('#taskMember').value=task?.member||'lin'; $('#taskStatus').value=task?.status||'todo'; $('#taskType').value=task?.type||'商单'; $('#taskIncome').value=task?.income||''; $('#taskShipping').value=task?.shipping||''; $('#taskPromotion').value=task?.promotion||''; $('#taskNote').value=task?.note||''; $('#deleteTaskBtn').style.display=task?'block':'none'; openModal('taskModal'); setTimeout(()=>$('#taskProduct').focus(),50); };
+    $('#taskForm').addEventListener('submit', e => { e.preventDefault(); const id=editingId||`DW-${iso(today).slice(5).replace('-','')}-${String(Date.now()).slice(-3)}`; const current=tasks.find(t=>t.id===id); const item={id,product:$('#taskProduct').value.trim(),publish:$('#taskPublish').value,returnDate:$('#taskReturn').value,member:$('#taskMember').value,status:$('#taskStatus').value,type:$('#taskType').value,income:Number($('#taskIncome').value||0),shipping:Number($('#taskShipping').value||0),promotion:Number($('#taskPromotion').value||0),note:$('#taskNote').value,icon:current?.icon||'📦',pic:current?.pic||'pic-shoe'}; if(current) tasks=tasks.map(t=>t.id===id?item:t); else tasks.unshift(item); saveTasks(); renderTasks(); closeModal('taskModal'); showToast(current?'任务已更新':'任务已创建'); });
+    $('#deleteTaskBtn').addEventListener('click',()=>{ if(!editingId)return; if(confirm('确定删除这条任务吗？')){ tasks=tasks.filter(t=>t.id!==editingId); saveTasks(); renderTasks(); closeModal('taskModal'); showToast('任务已删除'); }});
+    $('#taskList').addEventListener('click', e => { const btn=e.target.closest('[data-action]'); if(!btn)return; const t=tasks.find(x=>x.id===btn.dataset.id); if(!t)return; if(btn.dataset.action==='accept'){ t.status='progress'; saveTasks(); renderTasks(); showToast('任务已接受，已加入拍摄排期'); } else openTask(t); });
+    $$('.filter').forEach(f=>f.addEventListener('click',()=>{ $$('.filter').forEach(x=>x.classList.remove('active')); f.classList.add('active'); activeFilter=f.dataset.filter; renderTasks(); }));
+    $('#memberFilter').addEventListener('change',e=>{ memberFilter=e.target.value; renderTasks(); showToast(memberFilter==='all'?'已显示全部负责人':`已筛选：${memberById(memberFilter).name}`); });
+    const renderTeamFields=()=>{ $('#teamFields').innerHTML=members.map((m,i)=>`<div class="form-field"><label class="member-field-label"><span>账号 ${i+1} · ${m.id==='lin'?'主账号':'团队账号'}</span>${members.length>1?`<button type="button" class="remove-member" data-remove-member="${m.id}">删除</button>`:''}</label><div style="display:flex;align-items:center;gap:9px"><label class="member-avatar" style="--member-color:${m.color};cursor:pointer" title="点击更换头像">${memberAvatar(m)}<input type="file" data-member-avatar="${m.id}" accept="image/png,image/jpeg,image/webp" hidden/></label><input data-member-name="${m.id}" value="${escapeHtml(m.name)}" required/></div></div>`).join(''); };
+    $('#addMemberBtn').addEventListener('click',()=>{ const index=members.length+1; const colors=['#4468ff','#20b486','#f39a4b','#9564d9','#ec6a78','#0ea5a8','#64748b']; members.push({id:'member_'+Date.now(),name:'新成员 '+index,short:'新',color:colors[members.length%colors.length]}); renderTeamFields(); const inputs=$$('[data-member-name]'); inputs[inputs.length-1]?.focus(); showToast('已添加新成员，请填写姓名'); });
+    $$('[data-team-open]').forEach(button=>button.addEventListener('click',()=>{ renderTeamFields(); openModal('teamModal'); }));
+    $('#teamFields').addEventListener('click',e=>{ const btn=e.target.closest('[data-remove-member]'); if(!btn)return; const id=btn.dataset.removeMember; const m=memberById(id); if(members.length<=1){showToast('至少需要保留一位成员');return;} const replacement=members.find(x=>x.id!==id); const taskCount=tasks.filter(t=>(t.member||'lin')===id).length; const promotionCount=promotions.filter(p=>p.member===id).length; const message=taskCount||promotionCount?`${m.name} 还有 ${taskCount} 个任务、${promotionCount} 条推广记录，删除后会转交给 ${replacement.name}，确定继续吗？`:`确定删除成员 ${m.name} 吗？`; if(!confirm(message))return; tasks=tasks.map(t=>(t.member||'lin')===id?{...t,member:replacement.id}:t); promotions=promotions.map(p=>p.member===id?{...p,member:replacement.id}:p); members.splice(members.findIndex(x=>x.id===id),1); storage.set('dewuMembers',members.map(m=>({id:m.id,name:m.name,short:m.short,color:m.color,avatar:m.avatar||''}))); saveTasks(); savePromotions(); renderTeamFields(); renderTasks(); renderPromotionFilters(); renderPromotions(); showToast('成员已删除，相关记录已转交'); });
+    $('#teamFields').addEventListener('change',e=>{ const input=e.target.closest('[data-member-avatar]'); if(!input)return; const file=input.files?.[0]; const m=memberById(input.dataset.memberAvatar); if(!file||!m)return; const reader=new FileReader(); reader.onload=()=>{m.avatar=reader.result; storage.set('dewuMembers',members.map(x=>({id:x.id,name:x.name,short:x.short,color:x.color,avatar:x.avatar||''}))); renderTeamFields(); renderTasks(); renderPromotions(); showToast(`${m.name} 的头像已更新`);}; reader.readAsDataURL(file); });
+    $('#teamForm').addEventListener('submit',e=>{ e.preventDefault(); $$('[data-member-name]').forEach(input=>{ const m=memberById(input.dataset.memberName); if(m && input.value.trim()) m.name=input.value.trim(); }); storage.set('dewuMembers',members.map(m=>({id:m.id,name:m.name,short:m.short,color:m.color,avatar:m.avatar||''}))); fillMemberOptions(); renderTasks(); renderPromotions(); closeModal('teamModal'); showToast('团队成员已保存'); });
+    $('#newTaskBtn').addEventListener('click',()=>openTask());
+    $$('.nav-item').forEach(item=>item.addEventListener('click',()=>{ $$('.nav-item').forEach(n=>n.classList.remove('active')); item.classList.add('active'); const view=item.dataset.view; const banner=$('#viewBanner'); const title=$('#viewBannerTitle'); const text=$('#viewBannerText'); if(view==='settings'){ renderTeamFields(); openModal('teamModal'); return; } if(view==='tasks'){ $('#taskList').scrollIntoView({behavior:'smooth',block:'start'}); showToast('已定位到任务管理'); return; } if(view==='orders'){ banner.classList.add('open'); title.textContent='商单记录'; text.textContent='当前任务列表已按“商单 / 非商单”标注，可在任务编辑中切换类型。'; banner.scrollIntoView({behavior:'smooth',block:'center'}); return; } if(view==='finance'){ banner.classList.add('open'); title.textContent='财务看板'; text.textContent='收入趋势、预算执行和推广支出已在下方展示，可直接编辑预算。'; banner.scrollIntoView({behavior:'smooth',block:'center'}); return; } if(view==='reminders'){ banner.classList.add('open'); title.textContent='寄回提醒'; text.textContent='请在任务列表中查看寄回日期；即将到期的任务会显示剩余天数。'; banner.scrollIntoView({behavior:'smooth',block:'center'}); return; } banner.classList.remove('open'); if(view==='dashboard') window.scrollTo({top:0,behavior:'smooth'}); }));
+    $('#accountCards').addEventListener('click',e=>{ const card=e.target.closest('[data-account]'); if(!card)return; memberFilter=card.dataset.account; $('#memberFilter').value=memberFilter; renderTasks(); $('#taskList').scrollIntoView({behavior:'smooth',block:'start'}); showToast(memberFilter==='all'?'已显示全部账号':`已筛选：${memberById(memberFilter).name}`); });
+    $('#exportBtn').addEventListener('click',()=>{ const rows=[['任务号','产品','负责人/账号','发布时间','寄回时间','状态','类型','任务收入','寄回运费','任务投流支出','净收益'],...tasks.map(t=>[t.id,t.product,memberById(t.member).name,t.publish,t.returnDate,statusMap[t.status][0],t.type,t.income||0,t.shipping||0,t.promotion||0,Number(t.income||0)-Number(t.shipping||0)-Number(t.promotion||0)])]; const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='寄拍任务报表.csv'; a.click(); URL.revokeObjectURL(a.href); showToast('报表已导出'); });
+    $('#monthSelect').addEventListener('change',e=>{ renderChartRange(); showToast('已切换至 '+e.target.options[e.target.selectedIndex].text+'，数据可继续编辑'); });
+    $('#rangeSelect').addEventListener('change',()=>{ renderChartRange(); showToast('趋势范围已更新'); });
+    $('#profileAvatar').addEventListener('click',()=>$('#avatarInput').click()); $('#avatarInput').addEventListener('change',e=>{ const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader(); reader.onload=()=>{ storage.set('dewuAvatar',reader.result); renderAvatar(reader.result); showToast('账号头像已更新'); }; reader.readAsDataURL(file); });
+    $('#exportBackupBtn').addEventListener('click',()=>{ const backup={version:1,exported_at:new Date().toISOString(),payload:cloudPayload()}; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'})); a.download='光迹工作台数据备份.json'; a.click(); URL.revokeObjectURL(a.href); showToast('数据备份已下载'); });
+    $('#importBackupBtn').addEventListener('click',()=>$('#backupInput').click()); $('#backupInput').addEventListener('change',e=>{ const file=e.target.files?.[0]; if(!file)return; const reader=new FileReader(); reader.onload=()=>{ try { const backup=JSON.parse(reader.result); const payload=backup.payload||backup; if(!payload.tasks||!payload.members) throw new Error('invalid'); if(!confirm('恢复备份会覆盖当前工作台数据，确定继续吗？'))return; applyCloudPayload(payload); setTimeout(saveCloudState,50); showToast('数据已恢复并同步'); } catch { showToast('这不是有效的工作台备份文件'); } }; reader.readAsText(file,'utf-8'); e.target.value=''; });
+    $$('[data-budget-open]').forEach(b=>b.addEventListener('click',()=>{ $('#budgetIncome').value=budgets.income; $('#budgetPromotion').value=budgets.promotion; $('#budgetProps').value=budgets.props; openModal('budgetModal'); }));
+    $('#budgetForm').addEventListener('submit',e=>{e.preventDefault(); budgets={income:+$('#budgetIncome').value,promotion:+$('#budgetPromotion').value,props:+$('#budgetProps').value,spentPromotion:budgets.spentPromotion||0}; storage.set('dewuBudgets',budgets); renderFinancialDashboard(); closeModal('budgetModal'); showToast('预算目标已保存，实际金额会随任务自动更新');});
+    const openPromotion = p => { editingPromotionId=p?.id||null; $('#promotionModalTitle').textContent=p?'编辑推广记录':'添加推广记录'; $('#promotionId').value=p?.id||''; $('#promotionMember').value=p?.member||members[0]?.id||''; $('#promotionChannel').value=p?.channel||'小红书'; $('#promotionContent').value=p?.content||''; $('#promotionDate').value=p?.date||iso(today); $('#promotionAmount').value=p?.amount||''; $('#promotionNote').value=p?.note||''; $('#deletePromotionBtn').style.display=p?'block':'none'; openModal('promotionModal'); setTimeout(()=>$('#promotionContent').focus(),50); };
+    $('#newPromotionBtn').addEventListener('click',()=>openPromotion());
+    $('#promotionMemberFilter').addEventListener('change',e=>{promotionMemberFilter=e.target.value;renderPromotions();}); $('#promotionChannelFilter').addEventListener('change',e=>{promotionChannelFilter=e.target.value;renderPromotions();});
+    $('#promotionList').addEventListener('click',e=>{const btn=e.target.closest('[data-promotion-action]');if(!btn)return;const p=promotions.find(x=>x.id===btn.dataset.id);if(!p)return;if(btn.dataset.promotionAction==='edit')openPromotion(p);else if(confirm('确定删除这条推广记录吗？')){promotions=promotions.filter(x=>x.id!==p.id);savePromotions();renderPromotions();showToast('推广记录已删除');}});
+    $('#promotionForm').addEventListener('submit',e=>{e.preventDefault();const id=editingPromotionId||`PR-${Date.now().toString().slice(-6)}`;const item={id,member:$('#promotionMember').value,channel:$('#promotionChannel').value,content:$('#promotionContent').value.trim(),date:$('#promotionDate').value,amount:Number($('#promotionAmount').value),note:$('#promotionNote').value.trim()};if(editingPromotionId)promotions=promotions.map(p=>p.id===id?item:p);else promotions.unshift(item);savePromotions();renderPromotionFilters();renderPromotions();closeModal('promotionModal');showToast(editingPromotionId?'推广记录已更新':'推广记录已添加');});
+    $('#deletePromotionBtn').addEventListener('click',()=>{if(!editingPromotionId)return;if(confirm('确定删除这条推广记录吗？')){promotions=promotions.filter(p=>p.id!==editingPromotionId);savePromotions();renderPromotions();closeModal('promotionModal');showToast('推广记录已删除');}});
+    const todos=storage.get('dewuTodos',[{text:'确认 CELINE 腋下包收货信息',time:'今天 14:00',done:false},{text:'提交 G-SHOCK 初版照片',time:'今天 18:00',done:false},{text:'寄回 2 件已完成产品',time:'明天',done:false}]);
+    const renderTodos=()=>{ $('#todoList').innerHTML=todos.map((t,i)=>`<label class="todo" style="opacity:${t.done?.55:1}"><input type="checkbox" data-todo="${i}" ${t.done?'checked':''}/> ${escapeHtml(t.text)} <small>${t.time||'待安排'}</small></label>`).join(''); };
+    $('#todoList').addEventListener('change',e=>{ if(e.target.dataset.todo===undefined)return; todos[+e.target.dataset.todo].done=e.target.checked; storage.set('dewuTodos',todos); renderTodos(); showToast(e.target.checked?'待办已完成':'已恢复待办'); });
+    $('[data-todo-add]').addEventListener('click',()=>openModal('todoModal')); $('#todoForm').addEventListener('submit',e=>{e.preventDefault(); todos.push({text:$('#todoText').value.trim(),time:'待安排',done:false}); storage.set('dewuTodos',todos); renderTodos(); $('#todoText').value=''; closeModal('todoModal'); showToast('待办已添加');});
+    $$('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close))); $$('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)closeModal(b.id);})); document.addEventListener('keydown',e=>{if(e.key==='Escape')$$('.modal-backdrop.open').forEach(m=>closeModal(m.id));});
+    fillMemberOptions(); renderTasks(); renderTodos(); renderChartRange(); renderPromotions(); loadCloudState(); setInterval(loadCloudState, 8000);
+  </script>
+</body>
+</html>
