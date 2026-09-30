@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>光迹 Light Trace · 寄拍工作台</title>
   <style>
     :root {
@@ -21,6 +21,7 @@
       --shadow: 0 12px 36px rgba(24, 38, 79, .06);
     }
     * { box-sizing: border-box; }
+    html, body { width:100%; max-width:100%; min-width:0; overflow-x:hidden; -webkit-text-size-adjust:100%; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
     button, input, select { font: inherit; }
     button { cursor: pointer; border: 0; }
@@ -166,7 +167,35 @@
     .publish-reminder.open { display:flex; } .publish-reminder strong { color:#7b4700; } .publish-reminder-list { font-size:12px; color:#a36b19; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .client-list-clean { display:grid; gap:0; border-top:1px solid var(--line); } .client-clean-row { display:grid; grid-template-columns:1.2fr 1fr 1fr 1fr 92px; gap:14px; align-items:center; padding:14px 4px; border-bottom:1px solid var(--line); font-size:12px; } .client-clean-row.header { color:var(--muted); font-size:11px; background:#fafbfc; padding-left:12px; padding-right:12px; } .client-clean-row:not(.header) { padding-left:12px; padding-right:12px; } .client-clean-row small { display:block; color:var(--muted); margin-top:4px; } .client-clean-actions { display:flex; justify-content:flex-end; gap:5px; }
     @media (max-width: 1050px) { .sidebar { width: 264px; } .main { padding:24px; } .summary-grid { grid-template-columns:repeat(2,1fr); } .grid-2 { grid-template-columns:1fr; } }
-    @media (max-width: 720px) { .app { display:block; } .sidebar { width:100%; height:auto; padding:14px; border-right:0; border-bottom:1px solid var(--line); } .brand { padding-bottom:12px; } .nav-title, .sidebar-bottom { display:none; } .nav { flex-direction:row; overflow-x:auto; } .nav-item { white-space:nowrap; } .main { padding:20px 14px; } .topbar { align-items:flex-start; gap:12px; } h1 { font-size:22px; } .top-actions { flex-wrap:wrap; justify-content:flex-end; } .summary-grid, .bottom-grid { grid-template-columns:1fr; } .task-filters { flex-wrap:wrap; } .member-select { margin-left:0; } .task-row { grid-template-columns:1fr 1fr; gap:12px; } .task-row > :first-child { grid-column:1/-1; } .task-row > :last-child { justify-self:end; } .cell-label { display:block; font-size:10px; margin-bottom:4px; } .mix-content { gap:16px; } .donut { width:125px;height:125px; } .donut::after { inset:20px; } }
+    /* 手机 / 微信内置浏览器：强制使用全宽单栏，避免部分机型按桌面宽度缩放。 */
+    @media screen and (max-width: 1050px), screen and (max-device-width: 1050px) {
+      html, body { width:100% !important; max-width:100% !important; min-width:0 !important; overflow-x:hidden !important; }
+      .app { display:block !important; width:100% !important; max-width:100% !important; min-width:0 !important; }
+      .sidebar { width:100% !important; max-width:100% !important; min-width:0 !important; height:auto; padding:12px 12px 10px; border-right:0; border-bottom:1px solid var(--line); }
+      .brand { padding:0 4px 10px; }
+      .nav-title, .sidebar-bottom { display:none; }
+      .nav { width:100%; max-width:100%; flex-direction:row; flex-wrap:nowrap; gap:5px; overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch; }
+      .nav-item { flex:0 0 auto; white-space:nowrap; padding:9px 10px; }
+      .main { display:block; width:100% !important; max-width:100% !important; min-width:0 !important; padding:18px 13px 28px; }
+      .topbar { align-items:flex-start; gap:12px; margin-bottom:20px; }
+      h1 { font-size:22px; }
+      .top-actions { flex-wrap:wrap; justify-content:flex-end; gap:8px; }
+      .summary-grid, .bottom-grid { grid-template-columns:1fr; gap:12px; }
+      .grid-2 { grid-template-columns:1fr; gap:12px; }
+      .panel { padding:16px; }
+      .task-filters { flex-wrap:wrap; padding-left:14px; padding-right:14px; }
+      .task-head { padding-left:14px; padding-right:14px; }
+      .member-select { margin-left:0; }
+      .task-row { grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; padding:14px; }
+      .task-row > :first-child { grid-column:1/-1; }
+      .task-row > :last-child { justify-self:end; }
+      .cell-label { display:block; font-size:10px; margin-bottom:4px; }
+      .mix-content { gap:14px; padding:4px 0 10px; }
+      .donut { width:118px; height:118px; }
+      .donut::after { inset:19px; }
+      .client-clean-row { grid-template-columns:minmax(120px,1.2fr) minmax(110px,1fr) 82px; gap:8px; }
+      .client-clean-row > :nth-child(3), .client-clean-row > :nth-child(4) { display:none; }
+    }
   </style>
 </head>
 <body>
